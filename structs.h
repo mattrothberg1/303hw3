@@ -2,7 +2,7 @@
 #define STRUCTS_H
 #include<time.h>
 /*
- *
+ * .
  * Define page/sector structures here as well as utility structures
  * such as directory entries.
  *
@@ -12,11 +12,11 @@
  *
  */
 #define BLOCK_SIZE 512
-#define NB_PAGE 8192 
+#define NB_PAGE 8192
 #define FILE_NAME 32
 #define NB_LINK 3
 #define NB_FILE 3
-#define NB_FAT_NODE 42 
+#define NB_FAT_NODE 42
 #define NB_FREE_BLOCK_LIST 128
 typedef struct FileAccessStatus {//12 byte
 
