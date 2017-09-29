@@ -1,0 +1,136 @@
+CSE303 - Fall 2017
+Assignment #3: Filesystems
+
+Purpose and General Guidelines:
+
+  It is reasonable to think of a filesystem as being nothing more than a data structure. The operations of that data structure can vary, depending on the operating system. They may also have different asymptotic complexities, and filesystem methods may have different meanings on an OS-by-OS basis. A few examples are that (a) UNIX filesystems support the concept of reference-counted "hard links", whereas NTFS does not; (b) the MS-DOS FAT filesystem exposes a "seek" operation that is linear in the size of the file, whereas UNIX filesystems expose a "seek" operation that is logarithmic in the size of the file; and (c) UNIX filesystems require the 'accessed time' to be updated when a file is read, resulting in a disk write of file metadata even when the file contents are in the cache.
+
+  In this project, you will be creating a high-level API for a filesystem that you design under our requirements.
+  
+  This is a group assignment (groups will be assigned). Every bit of code that a student submits as part of this assignment should be her or his own work. You may consult question-and-answer websites such as StackOverflow to see how other people have tried, failed, and then received assistance in their attempts at these and similar problems. However, you may not use other people's code. Be conservative in your judgment.  Anything on GitHub is obviously off limits. Anything written by your classmates is off limits. By this point in your academic career, you should know how to be ethical.
+
+Warning
+
+  Your code is expected to *exactly* match the specified output. If they do not, you will not receive any points.
+
+Getting the Files
+
+  The source code that you will be editing can be found in the ~jloew/CSE303 folder on the sunlab machines.  From your sunlab account, you should make a protected folder where you will work on this project, then copy the source code and unpack it. You should know how to do this by now, but just in case you don't, here is a sequence of commands that should work, once you are logged into the sunlab:
+  
+    cd ~/
+    mkdir cse303
+    chmod 700 cse303
+    cd cse303
+    tar -xzvf ~jloew/CSE303/cse303_p3.tgz
+
+  This will create a subfolder with the project 3 source code in it. The assignment requires you to edit the files in the folder to complete several tasks.
+
+Task #0: Tell us who you are
+
+  You should edit the 'student.c' file to provide your name(s) and email address(es). Until you do this, none of your programs will execute.
+  
+Task #1: Design the Initial Filesystem
+
+  In this project, you will be creating a four megabyte file that represents the entire filesystem. The filesystem will be broken up into 512 byte sectors/pages as the basic unit of storage.
+
+  You will need to define structs for the various page types you will use in the assignment, such as:
+
+    Root sector: Sector 0. Holds locations of all major elements such as the allocation table or the root directory.
+    Allocation pages: Tracks what sectors are in use and possibly how they are connected to each other.
+    Directory pages: A page full of directory entries.
+
+  This is not meant to be an exhaustive list, you will have to manage large directories, tracking file usage, long file names, etc.
+
+  The initial program must take in a single command line argument (fail otherwise) that indicates the name of the file that contains the filesystem. If the file does not exist, make it, report errors otherwise. If it does exist, validate it. Abort if the filesystem is corrupt. The basic file system will simply have the root directory that is empty - it will have metadata for used sectors and such.
+
+  You should use mmap to bring the filesystem into memory once it has been created.
+
+  Create the initializeFileSystem function that creates a new filesystem. At a minimum: Root sector, allocation pages, root directory page with "." and ".." entries.
+
+  Create the verifyFileSystem function that verifies an existing filesystem - this is only checking that we can find the allocation tables and root directory. A full verification is something for later.
+
+Task #2: Handle Commands
+
+  The processCommands function should loop until there is a fatal error, the user types in "quit" or the input source closes.
+
+  Successive tasks will require commands as well but here we list the ones that aren't necessarily tied to a particular task.
+
+  "dump <num>": Dumps the page number specified to the console as space-separated bytes printed in hex. 32 per line with 4 spaces separating the half-way point. Since pages are a multiple of 32, there are no special cases to deal with.
+
+Such as:
+00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff    00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff
+
+  "dump <file> <num>": Dumps the page as raw binary data to the specified file. If the file can not be opened for writing (you should create/truncate it if necessary), report an error and do not dump any data but do not terminate the program.
+
+  "usage": Tells the user how much space has been used (in bytes, multiple of page size) by the filesystem and how much space has been used for actual files.
+
+Task #3: Directories
+
+  "pwd": Tells the user their current location in the filesystem. This implies that we must keep track of the user's current location in the filesystem. We can use the ".." entries of a directory to find the root.
+
+  "cd <file>": Changes directory to one available in the current directory. Remember that "." and ".." must always be in a directory. You will not have to handle home directories nor spanning across directories. You will either be given a request that matches for the current directory (no subdirectory checks) or it will fail and print an error message to that effect (do not terminate the program). Do not try to change directory into a non-directory file.
+
+  "ls": Prints out the current directory contents in a user-readable fashion. There are no hidden files on this filesystem, so print them all out, including "." and "..". You will print them out in the following fashion: <f/d> <size> <name>. <f/d> is a single character that indicates file or directory. <size> is the number of bytes this file takes up on disk with a width of 12 - if it is a file, indicate only file data size, if it is a directory, indicate the size of the number of pages required to hold the directory entries. <name> is the name of the file/directory, left-aligned.
+
+  "mkdir <file>": Creates a new directory within the current one. You will not be given special characters in the name. If there is a conflict, print an error message to that effect (do not terminate the program).
+
+
+Task #4: Regular Files
+
+  "cat <file>": Outputs a file to the console. If used on a directory, say so and reject. If the file does not exist, say so and reject. Do not terminate the program. This should only be used on ASCII files. If the file contains less than a page, make sure not to print the whole page!
+
+  "write <file> <amt> <data>": Write <amt> bytes of <data> into the specified <file> in the current directory. This overwrites the file if it already exists. This creates the file if it did not exist. The data is given as a stream of hex digits.
+
+  "append <file> <amt> <data>": Append <amt> bytes of <data> onto the specified <file> in the current directory. This fails, without terminating, if the file does not already exist. The data is given as a stream of hex digits.
+
+  "remove <file> <start> <end>": Remove the bytes in the range [start,end) from the specified <file> in the current directory. This fails, without terminating, if the file does not already exist.
+
+Task #5: Metadata Access
+
+  "getpages <file>": Return a comma separated list of the pages associated with the given file or directory. For regular files, this should only be the pages reflecting the raw data. For directories, this should include all directory entry pages and any other pages for special handling such as long file names or maintaining links to the files.
+
+  "get <file> <start> <end>": Print to the console the bytes from the file in the range [start,end). This fails, without terminating, if the file does not already exist. Print whatever part of the range is possible.
+
+Task #6: Removal
+
+  "rmdir <file>": Removes a directory if the directory is empty and recovers the pages. Report, but do not terminate, if the file is not a directory or if the directory is not empty.
+
+  "rm <file>": Removes a file and recovers the pages. Report, but do not terminate, if the file is a directory.
+
+  "rm -rf <file>": Removes the file, regardless of what it is. If it is a directory, it also removes all the contents. This can not be used to remove the root directory. Report an error if that is attempted, but do not terminate.
+
+  You will not be given wildcards as file names.
+
+Task #6: Recovery
+
+  If your filesystem fails while in the middle of a behavior, it is possible that space get wasted and be inaccessible to the filesystem.
+
+  "scandisk": Validates the system integrity. 
+
+    If a sector is marked as allocated but no existing file can access it, it should not be marked as allocated.
+
+    If a file refers to a sector that is not allocated, we potentially have a problem. Ask the user if they want to (t)runcate the file (cut it off at that point) or (a)llocate the blocks as if they actually belong to the file.
+
+    If a sector is owned, incorrectly, by more than one file, report this but fixing it is out-of-scope.
+
+  "undelete <file>": Try to undelete a file or directory.
+
+    When you delete a file or directory, you should not zero out the entries for it (that takes up too much time anyway). Mark the space as unused. It is possible that a new file will take up that space (whether it be in the directory entries of file data itself) and the file will not be recoverable - print an error but do not terminate. If we can remark the space as used and check that all allocated sectors are not in use by someone else, recover the file (it may still be corrupt, out-of-scope to deal with that). This is more extensive with a directory but follows the same overall ideas.
+
+
+Notes:
+
+  Your group should spend a good chunk of time defining the structures you are going to use. Remember that pages are exactly 512 bytes. A well-designed set of structures will make integrating parts of the assignment easier. You will likely want to build a set of functions to help you manipulate the pages as well.
+
+  If you run out of disk space, you need to report that and potentially fail whatever action you were doing. If this leaves garbage behind, it needs to be cleaned up.
+
+  Do not try to maintain the entire filesystem in memory. If we arbitrarily kill your program in the middle of a set of tasks, we should see changes reflected in the filesystem.
+
+Turn-In Instructions
+
+  To turn in your solutions, type 'make turnin'.
+
+  You may turn in your solutions as many times as you like.  The last turn-in
+  received before grading begins is the only turn-in that will be graded.
+
+  Any task whose code does not compile will receive 0 points.
