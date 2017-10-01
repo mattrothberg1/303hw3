@@ -34,7 +34,6 @@ void filesystem(char *file)
 	/* pointer to the memory-mapped filesystem */
 	char *map = NULL;
 
-	
 	/*
 	 * open file, handle errors, create it if necessary.
 	 * should end up with map referring to the filesystem.
