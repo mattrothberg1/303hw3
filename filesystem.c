@@ -93,22 +93,18 @@ void filesystem(char *file)
 		}
 		else if(!strncmp(buffer, "pwd", 3))
 		{
-			//when we have root, we just find "." FD, it will have the current location, and. We will check ".."'s FD, and if we ahve this one's name - if it's a father we have /father/root. We check the index in node, and we will have it's index, next, and free. If it has next tehn we know the DD has next, then the file in the DD is more than 3. If we can find the ..,
 			//pwd();
 		}
 		else if(!strncmp(buffer, "cd ", 3))
 		{
-			//maintain a present directry in the file system, so just change the present directory location
 			//cd(buffer+3);
 		}
 		else if(!strncmp(buffer, "ls", 2))
 		{
-			//print everything in the directory DirectoryDescriptor, and if it has next, go onto the next DirectoryDescriptor until next is Null
 			//ls();
 		}
 		else if(!strncmp(buffer, "mkdir ", 6))
 		{
-			//write block, don't need to put the full block or FAT in it. Just need to create something like makeRoot
 			//mkdir(buffer+6);
 		}
 		else if(!strncmp(buffer, "cat ", 4))
