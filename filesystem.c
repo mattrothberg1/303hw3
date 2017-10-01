@@ -8,12 +8,18 @@
 #include "structs.h"
 #include "filesystem.h"
 
+DirectoryDiscriptor root;
+DirectoryDiscriptor directory_cl;//present location
+FileAllocationTable fat;
+FreeBlockList fbl;
+FILE * f;
 
 /*
  * generateData() - Converts source from hex digits to
  * binary data. Returns allocated pointer to data
  * of size amt/2.
  */
+
 char* generateData(char *source, size_t size)
 {
 	char *retval = (char *)malloc((size >> 1) * sizeof(char));
@@ -31,15 +37,25 @@ char* generateData(char *source, size_t size)
  */
 void filesystem(char *file)
 {
+
+	
 	/* pointer to the memory-mapped filesystem */
 	char *map = NULL;
-
+	
+	
 	/*
 	 * open file, handle errors, create it if necessary.
 	 * should end up with map referring to the filesystem.
 	 */
-
-
+	f = fopen("fs","r");//fs is a filesystem's name
+	if(f==NULL) {
+		//create file
+		f = fopen("fs","w+");
+		//init_disk(int address,int block_size);
+		//write_blocks(int start,int end,void *buffer)
+	}
+	map = mmap(NULL,TOTAL_SIZE,PROT_READ|PROT_WRITE|PROT_EXEC,MAP_SHARED,f,0);
+	
 	/* You will probably want other variables here for tracking purposes */
 
 
