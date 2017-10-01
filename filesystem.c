@@ -52,8 +52,8 @@ void filesystem(char *file)
 	if(f==NULL) {
 		//create file
 		f = fopen("fs","w+");
-		//init_disk();
-		//write_blocks(int start,int end,void *buffer)
+		init_disk();
+        //init_fs(fat) // use write blocks 
 	}
 	map = mmap(NULL,TOTAL_SIZE,PROT_READ|PROT_WRITE|PROT_EXEC,MAP_SHARED,f,0);
 	

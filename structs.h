@@ -66,6 +66,6 @@ typedef struct freeblocklist {//512 byte
     int list[NB_FREE_BLOCK_LIST];
 
 } freeblocklist;
-int write_blocks(int start, int end, void *buffer);
+int write_blocks(int start, int end, void *buffer, FILE f);
 int init_disk();
 #endif
