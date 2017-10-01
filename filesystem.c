@@ -32,6 +32,7 @@ char* generateData(char *source, size_t size)
 }
 
 
+
 /*
  * filesystem() - loads in the filesystem and accepts commands
  */
@@ -51,7 +52,7 @@ void filesystem(char *file)
 	if(f==NULL) {
 		//create file
 		f = fopen("fs","w+");
-		//init_disk(int address,int block_size);
+		//init_disk();
 		//write_blocks(int start,int end,void *buffer)
 	}
 	map = mmap(NULL,TOTAL_SIZE,PROT_READ|PROT_WRITE|PROT_EXEC,MAP_SHARED,f,0);
