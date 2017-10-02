@@ -41,7 +41,7 @@ void filesystem(char *file)
 
 	
 	/* pointer to the memory-mapped filesystem */
-	char *map = NULL;
+	void *map = NULL;
 	
 	
 	/*
@@ -52,10 +52,15 @@ void filesystem(char *file)
 	if(f==NULL) {
 		//create file
 		f = fopen("fs","w+");
-		init_disk();
-        //init_fs(fat) // use write blocks 
+		init_disk(f);
+		map = mmap(NULL,TOTAL_SIZE,PROT_READ|PROT_WRITE|PROT_EXEC,MAP_SHARED,f,0);
+		init_fs(&fat, &root, &fbl, map);
+	} else {
+		if(!verify_fs(&fat, &root, &fbl, map)) {
+		perror("ERROR: file system broken");
 	}
-	map = mmap(NULL,TOTAL_SIZE,PROT_READ|PROT_WRITE|PROT_EXEC,MAP_SHARED,f,0);
+	}
+	
 	
 	/* You will probably want other variables here for tracking purposes */
 

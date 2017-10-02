@@ -12,17 +12,28 @@
  *
  */
 #define BLOCK_SIZE 512
-#define NB_PAGE 8192
+#define FATNODE_SIZE 8
+#define NB_BLOCK 8192
 #define FILE_NAME 32
 #define NB_LINK 3
 #define NB_FILE 3
-#define NB_FAT_NODE 42
-#define NB_FREE_BLOCK_LIST 128
+#define DISK_BLOCK_START 0
+#define FREE_BLOCK_LIST_START DISK_BLOCK_START
+#define NB_FREE_BLOCK_LIST 64
+#define FILE_ALLOCATION_TABLE_START 64
+#define NB_FILE_ALLOCATION_TABLE 128
+#define DATA_BLOCK_START 192
+#define ROOT DATA_BLOCK_START
+#define NO_NEXT -2
+#define FATHER_OF_ROOT -1
+#define FREE 1
+#define BUSY 0
+
 typedef struct FileAccessStatus {//12 byte
 
-    int opened;
-    int wr_ptr;
-    int rd_ptr;
+    int open;
+    int write;
+    int read
 
 } FileAccessStatus;
 typedef struct Link {//32 byte
@@ -45,27 +56,30 @@ typedef struct DirectoryDescriptor {//488 byte
     int            index;
 } DirectoryDescriptor;
 
-typedef struct fat_node {//12 byte
+typedef struct FatNode {//8 byte
 
-    int index;
     int next;
     int free;
 
 } fat_node;
 
-typedef struct FileAllocationTable {//512 byte
+typedef struct FileAllocationTable { //128 block
 
-    fat_node table[NB_FAT_NODE];//128
-    int      count;
-    int      index;
+    fat_node table[NB_BLOCK];
 
 } FileAllocationTable;
 
-typedef struct freeblocklist {//512 byte
+typedef struct FreeBlockList {//64 block
 
-    int list[NB_FREE_BLOCK_LIST];
+    int list[NB_BLOCK];
 
-} freeblocklist;
-int write_blocks(int start, int end, void *buffer, FILE f);
-int init_disk();
+} FreeBlockList;
+int write_blocks(int start, int size, void *buffer, void* map);
+int write_FatNode(int index, FileAllocationTable* fat);
+int read_blocks(int start, int size, void *buffer, void * map);
+int init_disk(FILE * f);
+int write_FreeListNode;
+int init_fs(FileAllocationTable* fat, DirectoryDescriptor* root, FreeBlockList* fbl, void* map);
+int verify_fs(&fat, &root, &fbl, map);
+
 #endif
